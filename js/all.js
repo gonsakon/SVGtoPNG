@@ -49,7 +49,6 @@ $(function() {
                if (chartStyle[i].type === 1) {
                    selector = chartStyle[i].selectorText;
                    styles = makeStyleObject(chartStyle[i]);
-                   console.log($(selector).not('.c3-chart path').css(styles))
                    $('svg *').each(changeToDisplay);
                    $(selector).not('.c3-chart path').css(styles);
                }
