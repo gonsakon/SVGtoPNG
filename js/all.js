@@ -1,65 +1,100 @@
+
 $(function() {
+   var styles;
+   var createChartImages = function() {
+       // Zoom! Enhance!
+       $('#chart > svg').attr('transform', 'scale(2)');
+
+       // Remove all defs, which botch PNG output
+       $('defs').remove();
+       // Copy CSS styles to Canvas
+       inlineAllStyles();
+       // Create PNG image
+       var canvas = $('#canvas').empty()[0];
+       canvas.width = $('#chart').width() * 2;
+       canvas.height = $('#chart').height() * 2;
+
+       var canvasContext = canvas.getContext('2d');
+       var svg = $.trim($('#chart > svg')[0].outerHTML);
+       canvasContext.drawSvg(svg, 0, 0);
+       $(".savePNG").attr("href", canvas.toDataURL("png"))
+           .attr("download", function() {
+               return "_llamacharts.png";
+           });
+       var svgContent = createSVGContent($('#chart > svg')[0]);
+       $(".saveSVG").attr("href", "data:text/svg," + svgContent.source[0])
+           .attr("download", function() {
+               return filename + "_llamacharts.svg";
+           });
+
+   };
+   var inlineAllStyles = function() {
+       var chartStyle, selector;
+       // Get rules from c3.css
+       for (var i = 0; i <= document.styleSheets.length - 1; i++) {
+console.log(document.styleSheets[0]);
+
+           if (document.styleSheets[i].href && document.styleSheets[i].href.indexOf('c3.css') !== -1) {
+               if (document.styleSheets[i].rules !== undefined) {
+                   chartStyle = document.styleSheets[i].rules;
+               } else {
+                   chartStyle = document.styleSheets[i].cssRules;
+               }
+           }
+
+       }
+       if (chartStyle !== null && chartStyle !== undefined) {
+           // SVG doesn't use CSS visibility and opacity is an attribute, not a style property. Change hidden stuff to "display: none"
+           var changeToDisplay = function() {
+               if ($(this).css('visibility') === 'hidden' || $(this).css('opacity') === '0') {
+                   $(this).css('display', 'none');
+               }
+           };
+           // Inline apply all the CSS rules as inline
+           for (i = 0; i < chartStyle.length; i++) {
+
+               if (chartStyle[i].type === 1) {
+                   selector = chartStyle[i].selectorText;
+                   styles = makeStyleObject(chartStyle[i]);
+                   console.log($(selector).not('.c3-chart path').css(styles))
+                   $('svg *').each(changeToDisplay);
+                   $(selector).not('.c3-chart path').css(styles);
+               }
+               $('.c3-chart path')
+                   .filter(function() {
+                       return $(this).css('fill') === 'none';
+                   })
+                   .attr('fill', 'none');
+
+               $('.c3-chart path')
+                   .filter(function() {
+                       return !$(this).css('fill') === 'none';
+                   })
+                   .attr('fill', function() {
+                       return $(this).css('fill');
+                   });
+           }
+       }
+   };
+   // Create an object containing all the CSS styles.
+   // TODO move into inlineAllStyles
+   var makeStyleObject = function(rule) {
+       var styleDec = rule.style;
+       var output = {};
+       var s;
+       for (s = 0; s < styleDec.length; s++) {
+           output[styleDec[s]] = styleDec[styleDec[s]];
+       }
+       return output;
+   };
     var chart = c3.generate({
-        bindto: '#chartdiv',
+        bindto: '#chart',
         data: {
             columns: [
                 ['data1', 30, 200, 100, 400, 150, 250],
-                ['data2', 50, 20, 10, 40, 15, 25]
-            ]
+                ['data2', 50, 20, 10, 40, 15, 25]]
+            // ],type : 'pie',
         }
     });
-    var chart2 = c3.generate({
-        bindto: '#chartdiv2',
-        data: {
-            columns: [
-                ['data1', 30],
-                ['data2', 50]
-            ],
-            type: 'pie'
-        },
-
-        pie: {
-            label: {
-                format: function(value, ratio, id) {
-                    return d3.format('$')(value);
-                }
-            }
-        }
-    });
-    $(function() {
-        var tmpA = document.createElement('A');
-        tmpA.download = '圖片.png';
-        var svg2png = function(svg) {
-            var canvas = document.createElement('canvas'),
-            evt = document.createEvent('MouseEvent');
-            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-            evt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-            canvg(canvas, (new XMLSerializer()).serializeToString(svg), {
-                ignoreMouse: true,
-                ignoreAnimation: true,
-                renderCallback: function() {
-                    tmpA.href = canvas.toDataURL('image/png');
-                    console.log(canvas.toDataURL('image/png'));
-                    $('#img1').attr('src', canvas.toDataURL('image/png'))
-                    tmpA.dispatchEvent(evt);
-                }
-            });
-        };
-        var downloadBtn = $('#download');
-        downloadBtn.click(function(e) {
-            var me = $('#chartdiv svg');
-            downloadBtn.data('svg', me[0]);
-            e.preventDefault();
-            svg2png(downloadBtn.data('svg'));
-            return false;
-        });
-        var downloadBtn2 = $('#download2');
-        downloadBtn2.click(function(e) {
-            var me = $('#chartdiv2 svg');
-            downloadBtn2.data('svg', me[0]);
-            e.preventDefault();
-            svg2png(downloadBtn2.data('svg'));
-            return false;
-        });
-    });
+    createChartImages();
 });
