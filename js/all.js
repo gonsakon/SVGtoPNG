@@ -21,19 +21,12 @@ $(function() {
            .attr("download", function() {
                return "_llamacharts.png";
            });
-       var svgContent = createSVGContent($('#chart > svg')[0]);
-       $(".saveSVG").attr("href", "data:text/svg," + svgContent.source[0])
-           .attr("download", function() {
-               return filename + "_llamacharts.svg";
-           });
 
    };
    var inlineAllStyles = function() {
        var chartStyle, selector;
        // Get rules from c3.css
        for (var i = 0; i <= document.styleSheets.length - 1; i++) {
-console.log(document.styleSheets[0]);
-
            if (document.styleSheets[i].href && document.styleSheets[i].href.indexOf('c3.css') !== -1) {
                if (document.styleSheets[i].rules !== undefined) {
                    chartStyle = document.styleSheets[i].rules;
