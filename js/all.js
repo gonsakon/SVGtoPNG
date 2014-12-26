@@ -1,9 +1,23 @@
 
 $(function() {
+  $('.savePNG').on('click',function(e){
+    e.preventDefault;
+    createChartImages();
+  });
+   var chart = c3.generate({
+        data: {
+            columns: [
+                ['data1', 30, 200, 100, 400, 150, 250],
+                ['data2', 50, 20, 10, 40, 15, 25]],type : 'bar'
+        },point: {
+        show: false
+    }
+    });
+
    var styles;
    var createChartImages = function() {
        // Zoom! Enhance!
-       $('#chart > svg').attr('transform', 'scale(2)');
+       // $('#chart > svg').attr('transform', 'scale(2)');
 
        // Remove all defs, which botch PNG output
        $('defs').remove();
@@ -50,7 +64,8 @@ $(function() {
                    selector = chartStyle[i].selectorText;
                    styles = makeStyleObject(chartStyle[i]);
                    $('svg *').each(changeToDisplay);
-                   $(selector).not('.c3-chart path').css(styles);
+                   // $(selector).hide();
+                   $(selector).not($('.c3-chart path')).css(styles);
                }
                $('.c3-chart path')
                    .filter(function() {
@@ -79,14 +94,5 @@ $(function() {
        }
        return output;
    };
-    var chart = c3.generate({
-        bindto: '#chart',
-        data: {
-            columns: [
-                ['data1', 30, 200, 100, 400, 150, 250],
-                ['data2', 50, 20, 10, 40, 15, 25]]
-            // ],type : 'pie',
-        }
-    });
-    createChartImages();
+   
 });
